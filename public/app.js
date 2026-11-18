@@ -5,21 +5,48 @@ const transactionMessage = document.querySelector("#transaction-message");
 const passwordMessage = document.querySelector("#password-message");
 const tokenKey = "fieldnote-demo-token";
 let activeAction = "deposit";
+let demoSessionWasRestored = false;
 
 function showMessage(element, message, isError = false) {
   element.textContent = message;
   element.classList.toggle("error", isError);
 }
 
-async function api(path, options = {}) {
+async function fetchApi(path, options = {}) {
   const headers = { "Content-Type": "application/json", ...options.headers };
   const token = sessionStorage.getItem(tokenKey);
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const response = await fetch(path, { ...options, headers });
+  return fetch(path, { ...options, headers });
+}
+
+async function startDemoSession() {
+  const response = await fetch("/api/demo-session", { method: "POST" });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.token) {
+    throw new Error(data.error || "Could not open the demo workspace.");
+  }
+  sessionStorage.setItem(tokenKey, data.token);
+  return data;
+}
+
+async function api(path, options = {}) {
+  let response = await fetchApi(path, options);
+  if (response.status === 401 && path !== "/api/login" && path !== "/api/logout" &&
+      path !== "/api/accounts" && path !== "/api/demo-session") {
+    try {
+      await startDemoSession();
+      demoSessionWasRestored = true;
+      response = await fetchApi(path, options);
+    } catch (error) {
+      sessionStorage.removeItem(tokenKey);
+      signOut();
+      throw new Error("The demo restarted. Choose Continue as demo visitor to open a fresh workspace.");
+    }
+  }
+
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    if (response.status === 401) signOut();
     throw new Error(data.error || "The request could not be completed.");
   }
   return data;
@@ -69,6 +96,11 @@ async function loadDashboard() {
       return row;
     }));
   }
+
+  if (demoSessionWasRestored) {
+    showMessage(transactionMessage, "The free demo restarted, so its previous temporary data was cleared. You are in a fresh demo workspace.");
+    demoSessionWasRestored = false;
+  }
 }
 
 function formatMoney(paise) {
@@ -83,6 +115,20 @@ async function openDashboard() {
 
 document.querySelector("#login-tab").addEventListener("click", () => setAuthMode("login"));
 document.querySelector("#create-tab").addEventListener("click", () => setAuthMode("create"));
+
+document.querySelector("#demo-button").addEventListener("click", async () => {
+  const button = document.querySelector("#demo-button");
+  button.disabled = true;
+  showMessage(authMessage, "Opening a temporary demo workspace...");
+  try {
+    await startDemoSession();
+    await openDashboard();
+  } catch (error) {
+    showMessage(authMessage, error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+});
 
 document.querySelector("#login-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -138,7 +184,8 @@ document.querySelectorAll(".action-tab").forEach((button) => {
 
 document.querySelector("#transaction-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const form = new FormData(event.currentTarget);
+  const formElement = event.currentTarget;
+  const form = new FormData(formElement);
   const payload = { amount: form.get("amount") };
   let endpoint = `/api/${activeAction}`;
   if (activeAction === "transfer") {
@@ -148,7 +195,7 @@ document.querySelector("#transaction-form").addEventListener("submit", async (ev
 
   try {
     await api(endpoint, { method: "POST", body: JSON.stringify(payload) });
-    event.currentTarget.reset();
+    formElement.reset();
     showMessage(transactionMessage, `${activeAction[0].toUpperCase()}${activeAction.slice(1)} completed.`);
     await loadDashboard();
   } catch (error) {
@@ -158,13 +205,14 @@ document.querySelector("#transaction-form").addEventListener("submit", async (ev
 
 document.querySelector("#password-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const form = new FormData(event.currentTarget);
+  const formElement = event.currentTarget;
+  const form = new FormData(formElement);
   try {
     await api("/api/password", {
       method: "POST",
       body: JSON.stringify({ oldPassword: form.get("oldPassword"), newPassword: form.get("newPassword") }),
     });
-    event.currentTarget.reset();
+    formElement.reset();
     showMessage(passwordMessage, "Password updated.");
   } catch (error) {
     showMessage(passwordMessage, error.message, true);
@@ -180,6 +228,29 @@ document.querySelector("#refresh-button").addEventListener("click", async () => 
   try { await loadDashboard(); } catch (error) { showMessage(transactionMessage, error.message, true); }
 });
 
+document.querySelector("#close-account-button").addEventListener("click", async (event) => {
+  if (!window.confirm("Close this account? It can only be closed with a zero balance, and this action cannot be undone.")) {
+    return;
+  }
+
+  const button = event.currentTarget;
+  button.disabled = true;
+  showMessage(document.querySelector("#close-account-message"), "Closing account...");
+  try {
+    await api("/api/close-account", { method: "POST" });
+    signOut();
+    showMessage(authMessage, "Your zero-balance demo account has been closed.");
+    setAuthMode("create");
+  } catch (error) {
+    showMessage(document.querySelector("#close-account-message"), error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+});
+
 if (sessionStorage.getItem(tokenKey)) {
-  openDashboard().catch(() => signOut());
+  openDashboard().catch((error) => {
+    signOut();
+    showMessage(authMessage, error.message, true);
+  });
 }

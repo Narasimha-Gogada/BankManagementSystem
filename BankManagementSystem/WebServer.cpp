@@ -209,6 +209,39 @@ int main()
         }
     });
 
+    server.Post("/api/demo-session", [](const httplib::Request&, httplib::Response& response)
+    {
+        const std::string sessionToken = createToken();
+        const std::string temporaryPassword = createToken();
+        if (sessionToken.empty() || temporaryPassword.empty())
+        {
+            sendError(response, 500, "Could not start the demo session.");
+            return;
+        }
+
+        int accountNumber = -1;
+        try
+        {
+            std::lock_guard<std::mutex> lock(bankMutex);
+            accountNumber = bank.createAccount("Demo Visitor", temporaryPassword);
+        }
+        catch (const std::exception&)
+        {
+            sendError(response, 500, "Could not start the demo session.");
+            return;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(sessionsMutex);
+            sessions[sessionToken] = accountNumber;
+        }
+        sendJson(response, 201, {
+            {"token", sessionToken},
+            {"accountNumber", accountNumber},
+            {"name", "Demo Visitor"}
+        });
+    });
+
     server.Post("/api/login", [](const httplib::Request& request, httplib::Response& response)
     {
         Json body;
@@ -396,6 +429,56 @@ int main()
             }
         }
         sendJson(response, 200, statement);
+    });
+
+    server.Post("/api/close-account", [](const httplib::Request& request, httplib::Response& response)
+    {
+        const auto accountNumber = authenticatedAccount(request);
+        if (!accountNumber)
+        {
+            sendError(response, 401, "Sign in to continue.");
+            return;
+        }
+
+        bool closed = false;
+        {
+            std::lock_guard<std::mutex> lock(bankMutex);
+            long long balance = 0;
+            if (!bank.checkBalance(*accountNumber, balance))
+            {
+                sendError(response, 404, "Active account not found.");
+                return;
+            }
+            if (balance != 0)
+            {
+                sendError(response, 400, "Account can only be closed when its balance is Rs. 0.00. Withdraw or transfer the remaining funds first.");
+                return;
+            }
+            closed = bank.closeAccount(*accountNumber);
+        }
+
+        if (!closed)
+        {
+            sendError(response, 400, "The account could not be closed.");
+            return;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(sessionsMutex);
+            for (auto session = sessions.begin(); session != sessions.end();)
+            {
+                if (session->second == *accountNumber)
+                {
+                    session = sessions.erase(session);
+                }
+                else
+                {
+                    ++session;
+                }
+            }
+        }
+
+        sendJson(response, 200, {{"status", "closed"}});
     });
 
     server.Post("/api/password", [](const httplib::Request& request, httplib::Response& response)

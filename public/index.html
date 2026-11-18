@@ -37,6 +37,9 @@
           <button class="mode-button" id="create-tab" type="button" role="tab" aria-selected="false">Create account</button>
         </div>
 
+        <button id="demo-button" class="demo-button" type="button">Continue as demo visitor <span aria-hidden="true">&#8594;</span></button>
+        <p class="demo-caption">Opens a temporary workspace. No account details needed.</p>
+
         <form id="login-form" class="form-stack">
           <div>
             <p class="eyebrow">Welcome back</p>
@@ -110,6 +113,15 @@
           <button class="quiet-button" type="submit">Update password</button>
         </form>
         <p id="password-message" class="form-message" aria-live="polite"></p>
+      </details>
+
+      <details class="close-account-panel">
+        <summary>Close account</summary>
+        <div class="close-account-content">
+          <p>Closing is permanent for this demo account and is allowed only when the balance is Rs. 0.00.</p>
+          <button id="close-account-button" class="danger-button" type="button">Close this account</button>
+        </div>
+        <p id="close-account-message" class="form-message" aria-live="polite"></p>
       </details>
     </section>
   </main>

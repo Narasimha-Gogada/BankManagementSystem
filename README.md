@@ -1,12 +1,13 @@
 # Bank Management System
 
-A C++ banking-system demonstration with both a terminal interface and a browser-based demo served by a C++ HTTP API. This is not a real banking service. Do not enter real credentials or financial information.
+A C++ banking-system demonstration with both a terminal interface and a browser-based demo served by a C++ HTTP API. The demo supports account creation, sign-in, deposits, withdrawals, transfers, password changes, and closing an account only when its balance is zero. This is not a real banking service. Do not enter real credentials or financial information.
 
 ## Run the web demo locally
 
-Install Docker Desktop, open PowerShell in the repository root, and run:
+This project does not use Node.js, npm, or an `npm run dev` script. The `npm is not recognized` message means npm is unavailable, but installing Node.js will not run this C++ application. Use Docker Desktop instead. If PowerShell currently shows the parent folder `bank_management`, run:
 
 ```powershell
+cd .\BankMangementSystem
 docker build -t bank-management-demo .
 docker run --rm -p 10000:10000 -e PORT=10000 bank-management-demo
 ```
