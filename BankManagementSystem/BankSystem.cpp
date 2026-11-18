@@ -494,12 +494,3 @@ void BankSystem::run()
         }
     }
 }
-
-// Program entry point.
-int main()
-{
-    BankSystem system;
-    system.run();
-
-    return 0;
-}

@@ -2,13 +2,12 @@
 
 ## Important: the current program is not web-deployable yet
 
-This repository currently contains a console C++ program that reads from `std::cin` and writes to `std::cout`. Render Web Services host HTTP applications, not interactive terminal programs. Also, `BankManagementSystem/main.cpp` is currently empty. Deploying the current repository as a web service will not produce a usable website.
+This repository currently contains a console C++ program that reads from `std::cin` and writes to `std::cout`. Its `main()` entry point starts the terminal menu; Render Web Services host HTTP applications, not interactive terminal programs. Deploying the current repository as a web service will not produce a usable website.
 
 Before deploying, you must:
 
-1. Add and test a `main()` entry point so the C++ application builds and runs locally.
-2. Convert the console workflow into an HTTP API or web application. The server must listen on `0.0.0.0` and the port supplied in the `PORT` environment variable.
-3. Add a `Dockerfile` that builds and starts that HTTP server. The server process must stay running and handle HTTP requests; simply starting the console menu is not sufficient.
+1. Convert the console workflow into an HTTP API or web application. The server must listen on `0.0.0.0` and the port supplied in the `PORT` environment variable.
+2. Add a `Dockerfile` that builds and starts that HTTP server. The server process must stay running and handle HTTP requests; simply starting the console menu is not sufficient.
 
 ## Create the Render service
 
