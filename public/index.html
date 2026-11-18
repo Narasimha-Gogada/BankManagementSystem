@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f5f0">
+  <title>Fieldnote Bank | Demo</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Fieldnote Bank home">
+      <span class="brand-mark" aria-hidden="true">F</span>
+      <span>Fieldnote <b>Bank</b></span>
+    </a>
+    <span class="demo-tag"><span></span> DEMO ENVIRONMENT</span>
+  </header>
+
+  <main>
+    <section class="notice" role="note">
+      <strong>Demo only.</strong> Do not use real passwords or financial information. Accounts are temporary and can be erased when the service restarts.
+    </section>
+
+    <section id="auth-view" class="auth-layout">
+      <div class="intro">
+        <p class="eyebrow">A small banking-system demonstration</p>
+        <h1>Money, made<br><em>more manageable.</em></h1>
+        <p class="intro-copy">Create a temporary account to explore deposits, withdrawals, transfers, and your recent activity.</p>
+        <div class="intro-rule"><span></span><span></span><span></span></div>
+        <p class="fine-print">Built with the project's C++ banking logic. Demo balances are not real funds.</p>
+      </div>
+
+      <div class="auth-panel">
+        <div class="mode-switch" role="tablist" aria-label="Account access">
+          <button class="mode-button active" id="login-tab" type="button" role="tab" aria-selected="true">Sign in</button>
+          <button class="mode-button" id="create-tab" type="button" role="tab" aria-selected="false">Create account</button>
+        </div>
+
+        <form id="login-form" class="form-stack">
+          <div>
+            <p class="eyebrow">Welcome back</p>
+            <h2>Sign in to your account</h2>
+          </div>
+          <label>Account number<input name="accountNumber" inputmode="numeric" autocomplete="username" placeholder="e.g. 100001" required></label>
+          <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="primary-button" type="submit">Sign in <span aria-hidden="true">&#8594;</span></button>
+        </form>
+
+        <form id="create-form" class="form-stack hidden">
+          <div>
+            <p class="eyebrow">Start with a clean slate</p>
+            <h2>Create a demo account</h2>
+          </div>
+          <label>Customer name<input name="name" autocomplete="name" maxlength="80" required></label>
+          <label>Password<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><small>Use at least 8 characters. Do not reuse a real password.</small></label>
+          <button class="primary-button" type="submit">Create account <span aria-hidden="true">&#8594;</span></button>
+        </form>
+        <p id="auth-message" class="form-message" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section id="dashboard-view" class="dashboard hidden">
+      <div class="dashboard-heading">
+        <div>
+          <p class="eyebrow">Your demo workspace</p>
+          <h1>Hello, <span id="customer-name">Customer</span></h1>
+        </div>
+        <button id="logout-button" class="quiet-button" type="button">Sign out</button>
+      </div>
+
+      <div class="summary-grid">
+        <section class="balance-panel">
+          <div class="panel-kicker"><span>AVAILABLE BALANCE</span><span class="live-dot">DEMO</span></div>
+          <p class="balance-value" id="balance-value">Rs. 0.00</p>
+          <p class="account-line">Account <strong id="account-number">-</strong></p>
+          <div class="balance-decoration" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        </section>
+        <section class="action-panel">
+          <div class="section-heading"><div><p class="eyebrow">Move money</p><h2>Quick transaction</h2></div></div>
+          <div class="action-switch" role="tablist" aria-label="Transaction type">
+            <button type="button" class="action-tab selected" data-action="deposit">Deposit</button>
+            <button type="button" class="action-tab" data-action="withdraw">Withdraw</button>
+            <button type="button" class="action-tab" data-action="transfer">Transfer</button>
+          </div>
+          <form id="transaction-form" class="form-stack compact-form">
+            <label id="destination-field" class="hidden">Recipient account number<input name="destinationAccountNumber" inputmode="numeric"></label>
+            <label>Amount (Rs.)<input name="amount" inputmode="decimal" placeholder="0.00" pattern="[0-9]+(\.[0-9]{1,2})?" required></label>
+            <button class="primary-button" type="submit">Continue <span aria-hidden="true">&#8594;</span></button>
+          </form>
+          <p id="transaction-message" class="form-message" aria-live="polite"></p>
+        </section>
+      </div>
+
+      <section class="activity-panel">
+        <div class="section-heading"><div><p class="eyebrow">Your latest activity</p><h2>Mini statement</h2></div><button id="refresh-button" class="quiet-button" type="button" aria-label="Refresh balance and statement" title="Refresh">&#8635;</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Transaction</th><th>Date</th><th>Status</th><th class="amount-column">Amount</th></tr></thead>
+            <tbody id="statement-body"><tr><td class="empty-state" colspan="4">No transactions yet.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <details class="password-panel">
+        <summary>Change password</summary>
+        <form id="password-form" class="password-form">
+          <label>Current password<input name="oldPassword" type="password" autocomplete="current-password" required></label>
+          <label>New password<input name="newPassword" type="password" autocomplete="new-password" minlength="8" required></label>
+          <button class="quiet-button" type="submit">Update password</button>
+        </form>
+        <p id="password-message" class="form-message" aria-live="polite"></p>
+      </details>
+    </section>
+  </main>
+
+  <footer><span>FIELDNOTE BANK / SYSTEM DEMONSTRATION</span><span>NOT A REAL FINANCIAL SERVICE</span></footer>
+</body>
+</html>

@@ -75,6 +75,18 @@ bool Bank::authenticate(
     return account->verifyPassword(password);
 }
 
+std::string Bank::getCustomerName(int accountNumber) const
+{
+    const Account* account = findAccount(accountNumber);
+
+    if (account == nullptr || !account->isActive())
+    {
+        return "";
+    }
+
+    return account->getCustomerName();
+}
+
 
 void Bank::recordTransaction(
     TransactionType type,

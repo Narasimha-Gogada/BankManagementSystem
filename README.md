@@ -1,19 +1,34 @@
 # Bank Management System
 
-A console-based bank management program written in C++. It is not a Node.js app, so `npm run dev` does not apply.
+A C++ banking-system demonstration with both a terminal interface and a browser-based demo served by a C++ HTTP API. This is not a real banking service. Do not enter real credentials or financial information.
 
-## Build and run on Windows
+## Run the web demo locally
 
-Install a C++ compiler such as MinGW-w64 and make sure `g++` is available in PowerShell. From the repository root, run:
+Install Docker Desktop, open PowerShell in the repository root, and run:
 
 ```powershell
-New-Item -ItemType Directory -Force build
-g++ -std=c++17 BankManagementSystem\main.cpp BankManagementSystem\Account.cpp BankManagementSystem\Admin.cpp BankManagementSystem\Bank.cpp BankManagementSystem\BankSystem.cpp BankManagementSystem\Transaction.cpp -o build\BankManagementSystem.exe
-.\build\BankManagementSystem.exe
+docker build -t bank-management-demo .
+docker run --rm -p 10000:10000 -e PORT=10000 bank-management-demo
 ```
 
-The program keeps accounts and transactions in memory. They are lost when the program exits.
+Open `http://localhost:10000`. Stop the local server with `Ctrl+C`.
 
-## Render
+## Run the console program
 
-The current project is an interactive console application, not an HTTP web application. It cannot be deployed as a Render Web Service as-is. See [deploy.md](deploy.md) for the requirements and free-plan limitations if you later convert it into a web app.
+The original terminal interface is available as the `bank-console` CMake target. Install CMake and OpenSSL development files, then run these commands from the repository root:
+
+```powershell
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+.\build\bank-console.exe
+```
+
+The CMake configure step downloads pinned versions of cpp-httplib and nlohmann/json. To run the web server directly after building, run this from the repository root and open `http://localhost:10000`:
+
+```powershell
+.\build\bank-web.exe
+```
+
+## Deploy on Render
+
+See [deploy.md](deploy.md) for the Docker-based Render setup. The app keeps its demo accounts in memory; they disappear when the service restarts or spins down. This project is not suitable for real customer accounts or funds.

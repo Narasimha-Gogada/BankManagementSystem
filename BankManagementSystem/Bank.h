@@ -51,6 +51,8 @@ public:
         const std::string& password
     ) const;
 
+    std::string getCustomerName(int accountNumber) const;
+
     bool closeAccount(int accountNumber);
 
     // Banking operations.
